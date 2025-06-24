@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { Filter } from 'lucide-react'
 import { TrendingTicker } from '@/components/TrendingTicker'
 import { CategoryFilters } from '@/components/CategoryFilters'
 import { StoryGrid } from '@/components/StoryGrid'
@@ -9,6 +11,7 @@ import { SearchBar } from '@/components/SearchBar'
 import { StoryDetailModal } from '@/components/StoryDetailModal'
 import { GeographicFilter } from '@/components/GeographicFilter'
 import { MiniGlobe } from '@/components/MiniGlobe'
+import { AdvancedFilters } from '@/components/AdvancedFilters'
 import { useStories } from '@/hooks/useStories'
 import { Story } from '@/types/perigon'
 
@@ -31,6 +34,12 @@ export default function TrendingPage() {
   const [selectedStory, setSelectedStory] = useState<Story | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [cardRect, setCardRect] = useState<DOMRect | null>(null)
+  const [isAdvancedFiltersOpen, setIsAdvancedFiltersOpen] = useState(false)
+  const [advancedFilters, setAdvancedFilters] = useState({
+    dateRange: '24h',
+    countries: [] as string[],
+    sourceTypes: ['all'] as string[]
+  })
   
   const { stories, loading, error, refetch } = useStories({
     category: selectedCategory === 'All' ? undefined : selectedCategory.toLowerCase(),
@@ -99,6 +108,22 @@ export default function TrendingPage() {
                 selected={selectedCountry}
                 onSelect={setSelectedCountry}
               />
+              <motion.button
+                onClick={() => setIsAdvancedFiltersOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Filter className="w-4 h-4" />
+                <span className="text-sm font-medium">Advanced Filters</span>
+                {(advancedFilters.countries.length > 0 || advancedFilters.sourceTypes.length > 1) && (
+                  <motion.div
+                    className="w-2 h-2 bg-blue-500 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                  />
+                )}
+              </motion.button>
             </div>
           </div>
           
@@ -168,6 +193,12 @@ export default function TrendingPage() {
         isOpen={isModalOpen}
         onClose={handleModalClose}
         cardRect={cardRect || undefined}
+      />
+
+      <AdvancedFilters
+        isOpen={isAdvancedFiltersOpen}
+        onClose={() => setIsAdvancedFiltersOpen(false)}
+        onFiltersChange={setAdvancedFilters}
       />
     </div>
   )
