@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import { Story } from '@/types/perigon'
 import { formatTimeAgo } from '@/lib/utils'
 

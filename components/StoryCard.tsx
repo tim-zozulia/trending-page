@@ -8,9 +8,10 @@ import { TrendingUp, Clock, Globe, ChevronDown, ChevronUp } from 'lucide-react'
 interface StoryCardProps {
   story: Story
   index: number
+  onCardClick?: (story: Story, event: React.MouseEvent) => void
 }
 
-export function StoryCard({ story, index }: StoryCardProps) {
+export function StoryCard({ story, index, onCardClick }: StoryCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const hotIntensity = getHotBadgeIntensity(story.articleCount)
 
@@ -20,14 +21,21 @@ export function StoryCard({ story, index }: StoryCardProps) {
     high: 'bg-red-100 text-red-800 border-red-200'
   }
 
+  const handleCardClick = (event: React.MouseEvent) => {
+    if (onCardClick) {
+      onCardClick(story, event)
+    }
+  }
+
   return (
     <div 
       className={cn(
         "bg-white rounded-xl shadow-sm border border-slate-200",
-        "hover:shadow-lg hover:-translate-y-1 transition-all duration-300",
-        "group cursor-pointer"
+        "hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300",
+        "group cursor-pointer transform-gpu"
       )}
       style={{ animationDelay: `${index * 100}ms` }}
+      onClick={handleCardClick}
     >
       <div className="p-6">
         <div className="flex items-start justify-between mb-3">
@@ -72,7 +80,10 @@ export function StoryCard({ story, index }: StoryCardProps) {
           </div>
 
           <button
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={(e) => {
+              e.stopPropagation()
+              setIsExpanded(!isExpanded)
+            }}
             className="flex items-center text-blue-500 text-xs font-medium hover:text-blue-600 transition-colors"
           >
             {isExpanded ? (

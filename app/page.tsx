@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { TrendingTicker } from '@/components/TrendingTicker'
 import { CategoryFilters } from '@/components/CategoryFilters'
 import { StoryGrid } from '@/components/StoryGrid'
 import { LiveToggle } from '@/components/LiveToggle'
 import { SearchBar } from '@/components/SearchBar'
+import { StoryDetailModal } from '@/components/StoryDetailModal'
 import { useStories } from '@/hooks/useStories'
 import { Story } from '@/types/perigon'
 
@@ -24,12 +25,39 @@ export default function TrendingPage() {
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [isLiveMode, setIsLiveMode] = useState(false)
+  const [selectedStory, setSelectedStory] = useState<Story | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [cardRect, setCardRect] = useState<DOMRect | null>(null)
   
   const { stories, loading, error, refetch } = useStories({
     category: selectedCategory === 'All' ? undefined : selectedCategory.toLowerCase(),
     query: searchQuery,
     autoRefresh: isLiveMode
   })
+
+  const handleCardClick = useCallback((story: Story, event: React.MouseEvent) => {
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
+    setCardRect(rect)
+    setSelectedStory(story)
+    setIsModalOpen(true)
+  }, [])
+
+  const handleModalClose = useCallback(() => {
+    setIsModalOpen(false)
+    setSelectedStory(null)
+    setCardRect(null)
+  }, [])
+
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isModalOpen) {
+        handleModalClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [isModalOpen, handleModalClose])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -71,8 +99,16 @@ export default function TrendingPage() {
           loading={loading}
           error={error}
           onRetry={refetch}
+          onCardClick={handleCardClick}
         />
       </main>
+
+      <StoryDetailModal
+        story={selectedStory}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        cardRect={cardRect || undefined}
+      />
     </div>
   )
 }

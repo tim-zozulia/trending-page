@@ -10,9 +10,10 @@ interface StoryGridProps {
   loading: boolean
   error: string | null
   onRetry: () => void
+  onCardClick?: (story: Story, event: React.MouseEvent) => void
 }
 
-export function StoryGrid({ stories, loading, error, onRetry }: StoryGridProps) {
+export function StoryGrid({ stories, loading, error, onRetry, onCardClick }: StoryGridProps) {
   if (loading) {
     return <LoadingGrid />
   }
@@ -37,6 +38,7 @@ export function StoryGrid({ stories, loading, error, onRetry }: StoryGridProps) 
           key={story.clusterId} 
           story={story} 
           index={index}
+          onCardClick={onCardClick}
         />
       ))}
     </div>
