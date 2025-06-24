@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Story } from '@/types/perigon'
 import { formatTimeAgo, getHotBadgeIntensity, truncateText, cn } from '@/lib/utils'
 import { TrendingUp, Clock, Globe, ChevronDown, ChevronUp } from 'lucide-react'
@@ -13,6 +14,7 @@ interface StoryCardProps {
 
 export function StoryCard({ story, index, onCardClick }: StoryCardProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
   const hotIntensity = getHotBadgeIntensity(story.articleCount)
 
   const hotBadgeColors = {
@@ -28,25 +30,71 @@ export function StoryCard({ story, index, onCardClick }: StoryCardProps) {
   }
 
   return (
-    <div 
+    <motion.div 
       className={cn(
-        "bg-white rounded-xl shadow-sm border border-slate-200",
-        "hover:shadow-xl hover:-translate-y-2 hover:scale-[1.02] transition-all duration-300",
+        "bg-white rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden",
         "group cursor-pointer transform-gpu"
       )}
       style={{ animationDelay: `${index * 100}ms` }}
       onClick={handleCardClick}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.5 }}
+      whileHover={{
+        scale: 1.02,
+        rotateX: 2,
+        rotateY: 2,
+        transition: { duration: 0.3 }
+      }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
     >
-      <div className="p-6">
+      <motion.div 
+        className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10 backdrop-blur-sm opacity-0"
+        animate={{ opacity: isHovered ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+      />
+      <motion.div 
+        className="absolute inset-0 shadow-2xl rounded-2xl opacity-0"
+        animate={{ opacity: isHovered ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+      />
+      <div className="relative p-6">
         <div className="flex items-start justify-between mb-3">
-          <div className={cn(
-            "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border",
+          <motion.div className={cn(
+            "inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium border relative",
             "hot-badge",
             hotBadgeColors[hotIntensity]
           )}>
+            <motion.span
+              animate={{ 
+                scale: hotIntensity === 'high' ? [1, 1.2, 1] : [1, 1.1, 1],
+                rotate: hotIntensity === 'high' ? [0, 5, -5, 0] : 0
+              }}
+              transition={{ 
+                repeat: Infinity, 
+                duration: hotIntensity === 'high' ? 1.5 : 2,
+                ease: "easeInOut"
+              }}
+              className="mr-1"
+            >
+              🔥
+            </motion.span>
             <TrendingUp className="w-3 h-3 mr-1" />
             {story.articleCount} articles
-          </div>
+            {hotIntensity === 'high' && (
+              <motion.span
+                className="absolute -top-1 -right-1 text-xs"
+                animate={{ 
+                  rotate: [0, 10, -10, 0],
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{ repeat: Infinity, duration: 2 }}
+              >
+                ✨
+              </motion.span>
+            )}
+          </motion.div>
           
           <div className="flex items-center text-slate-500 text-xs">
             <Clock className="w-3 h-3 mr-1" />
@@ -54,9 +102,13 @@ export function StoryCard({ story, index, onCardClick }: StoryCardProps) {
           </div>
         </div>
 
-        <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+        <motion.h3 
+          className="font-bold text-lg text-slate-900 mb-2 transition-colors"
+          animate={{ color: isHovered ? '#2563eb' : '#0f172a' }}
+          transition={{ duration: 0.3 }}
+        >
           {story.name}
-        </h3>
+        </motion.h3>
 
         <p className="text-slate-600 text-sm leading-relaxed mb-4">
           {isExpanded ? story.summary : truncateText(story.summary, 120)}
@@ -98,6 +150,6 @@ export function StoryCard({ story, index, onCardClick }: StoryCardProps) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
